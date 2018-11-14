@@ -1,24 +1,22 @@
 /*
-Channel specific timer:
+
+Discord, channel specific timer:
 
 timer start <countdown> (optional)
 timer pause <reason> (optional)
 timer resume 
 timer stop    // returns the total time was running for / remaining.
 timer         // shows the current time if any, this help if none.
+
 */
 
 const Discord = require('discord.js');
 const client  = new Discord.Client();
 const micro   = require('micro')
+const server = micro(async (req, res) => 'Ready')
+const moment = require('moment');
 
 require('dotenv').config()
-
-var moment = require('moment');
-
-// console.log('Token:', process.env.TOKEN);
-
-const server = micro(async (req, res) => 'Ready')
 
 server.listen(3000)
 
@@ -31,7 +29,7 @@ const help =
 	'timer // returns current timer'
 
 client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
+	console.log(`Logged in as ${client.user.tag}!`);
 });
 
 
@@ -83,12 +81,12 @@ var timers = {}
 
 
 function manageTimers(){
-  	var now = moment.utc()
+	var now = moment.utc()
 
 	for(channel in timers) {
-  		let timer = timers[channel]
+		let timer = timers[channel]
 
-	  	var diff = now.diff(timer.started,'hours')
+		var diff = now.diff(timer.started,'hours')
 
 		// Clear anything older that 6 hours
 		if(diff > 6){
@@ -138,18 +136,17 @@ var manageInt = setInterval(manageTimers, 30 * 1000)
 client.on('message', msg => {
   if (msg.content.indexOf('timer') == 0) {
 
-  	var user          = msg.author.username 
-  	var channel       = msg.channel.id
-  	var opts          = msg.content.match(/\S+/g)
-  	var current       = timers[channel]
-  	var clientchannel = client.channels.get(channel) // msg.channel
+	var user          = msg.author.username 
+	var channel       = msg.channel.id
+	var opts          = msg.content.match(/\S+/g)
+	var current       = timers[channel]
+	var clientchannel = client.channels.get(channel)
 
+	var action        = opts[1]
+	var param         = opts[2]
+	var now           = moment.utc()
 
-  	var action        = opts[1]
-  	var param         = opts[2]
-  	var now           = moment.utc()
-
-  	switch(action) {
+	switch(action) {
 
 		case 'start':
 
@@ -197,7 +194,7 @@ client.on('message', msg => {
 				msg.reply('timer started')
 			}
 
-			break;
+			break
 
 		case 'pause':
 			if(current) {
@@ -232,8 +229,7 @@ client.on('message', msg => {
 				msg.reply('no current timer')
 			}
 
-
-			break;
+			break
 
 		case 'stop':
 
@@ -246,31 +242,26 @@ client.on('message', msg => {
 				msg.reply('no current timer')
 			}
 
-
-			break;
+			break
 
 		case 'help':
-  			msg.reply(help)
-  			break;
+			msg.reply(help)
+			break
 
-  		default:
+		default:
 
-  			if(current) {
-  				// msg.reply(
-  				// 	renderTimer(current, now)
-  				// )
+			if(current) {
 				clientchannel.send(
 					renderTimer(current, now)
 				)
+			}
 
-  			}
-
-  			else {
-  				clientchannel.send(help)
-  			}
-   	}
+			else {
+				clientchannel.send(help)
+			}
+	}
 
   }
-});
+})
 
-client.login(process.env.TOKEN);
+client.login(process.env.TOKEN)
